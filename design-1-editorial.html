@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Munn Aneja — Finance &amp; Information Systems</title>
+<meta name="description" content="Munn Aneja - Finance & Information Systems student at the University of Maryland and Product Management Intern at Aquila Clouds.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Hanken+Grotesk:wght@300..800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F4EFE4;
+    --paper-2:#FBF8F1;
+    --ink:#1B1A15;
+    --ink-soft:#54503F;
+    --line:#E0D8C6;
+    --accent:#BC532A;
+    --accent-deep:#8C3A18;
+    --display:'Fraunces',Georgia,serif;
+    --body:'Hanken Grotesk',-apple-system,sans-serif;
+    --maxw:1180px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--body);
+    font-size:18px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  /* subtle paper grain */
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.04;mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px;position:relative;z-index:1}
+  ::selection{background:var(--accent);color:#fff}
+
+  /* ---------- NAV ---------- */
+  header.nav{position:sticky;top:0;z-index:50;transition:background .3s,border-color .3s,box-shadow .3s;border-bottom:1px solid transparent}
+  header.nav.scrolled{background:rgba(244,239,228,.82);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .nav-row{display:flex;align-items:center;justify-content:space-between;height:74px}
+  .brand{font-family:var(--display);font-weight:600;font-size:21px;letter-spacing:-.01em;display:flex;align-items:center;gap:11px}
+  .brand .mark{width:30px;height:30px;border-radius:9px;background:var(--accent);color:var(--paper-2);display:grid;place-items:center;font-family:var(--body);font-size:15px;font-weight:800;transform:rotate(-6deg);transition:transform .25s}
+  .brand:hover .mark{transform:rotate(0deg)}
+  .nav-links{display:flex;align-items:center;gap:34px;list-style:none}
+  .nav-links a{font-size:15px;font-weight:500;letter-spacing:.01em;color:var(--ink-soft);position:relative;transition:color .2s}
+  .nav-links a::after{content:"";position:absolute;left:0;bottom:-5px;height:2px;width:0;background:var(--accent);transition:width .25s}
+  .nav-links a:hover{color:var(--ink)}
+  .nav-links a:hover::after{width:100%}
+  .btn{display:inline-flex;align-items:center;gap:8px;background:var(--ink);color:var(--paper-2);padding:11px 20px;border-radius:40px;font-size:14px;font-weight:600;letter-spacing:.01em;transition:transform .2s,background .2s,box-shadow .2s,color .2s}
+  .btn:hover{background:var(--accent);transform:translateY(-2px)}
+  .btn svg{width:14px;height:14px}
+  .menu-btn{display:none;background:none;border:none;cursor:pointer;flex-direction:column;gap:5px;padding:8px}
+  .menu-btn span{width:24px;height:2px;background:var(--ink);transition:.3s}
+
+  /* ---------- HERO ---------- */
+  .hero{padding:72px 0 88px}
+  .kicker{font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:26px}
+  .hero-grid{display:grid;grid-template-columns:1.55fr .9fr;gap:56px;align-items:end}
+  h1.title{font-family:var(--display);font-weight:340;font-size:clamp(3.4rem,9vw,7.4rem);line-height:.93;letter-spacing:-.025em}
+  h1.title em{font-style:italic;color:var(--accent)}
+  .lede{margin-top:30px;font-size:clamp(1.05rem,1.6vw,1.3rem);max-width:34ch;color:var(--ink-soft);line-height:1.55}
+  .hero-cta{margin-top:34px;display:flex;gap:14px;flex-wrap:wrap}
+  .btn-soft{background:var(--paper-2);color:var(--ink);box-shadow:0 0 0 1.5px var(--line)}
+  .btn-soft:hover{background:var(--accent);color:#fff;box-shadow:none}
+  /* index card */
+  .card-facts{background:var(--paper-2);border:1px solid var(--line);border-radius:18px;padding:30px;box-shadow:0 24px 50px -28px rgba(40,30,15,.25)}
+  .card-facts h3{font-family:var(--display);font-size:.95rem;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;margin-bottom:18px}
+  .fact{display:flex;justify-content:space-between;align-items:baseline;padding:13px 0;border-top:1px solid var(--line);gap:14px}
+  .fact:first-of-type{border-top:none}
+  .fact .k{font-size:13px;color:var(--ink-soft);letter-spacing:.02em}
+  .fact .v{font-family:var(--display);font-size:1.45rem;font-weight:500;text-align:right;line-height:1}
+  .fact .v small{font-family:var(--body);font-size:.7rem;color:var(--ink-soft);display:block;font-weight:500;margin-top:3px}
+
+  /* ---------- SECTION SCAFFOLD ---------- */
+  section{padding:84px 0;position:relative}
+  .sec-head{display:flex;align-items:baseline;gap:18px;margin-bottom:48px}
+  .sec-num{font-family:var(--display);font-size:1rem;color:var(--accent);font-weight:600}
+  .sec-title{font-family:var(--display);font-weight:380;font-size:clamp(2rem,4.5vw,3.1rem);letter-spacing:-.02em;line-height:1}
+  .rule{height:1px;background:var(--line);flex:1;align-self:center;margin-left:6px}
+
+  /* ABOUT */
+  .about-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:60px}
+  .about-grid p{font-size:1.18rem;line-height:1.7;margin-bottom:22px;color:#2c291f}
+  .about-grid p .hl{color:var(--accent);font-style:italic;font-family:var(--display)}
+  .traits{display:flex;flex-direction:column;gap:18px}
+  .trait{background:var(--paper-2);border:1px solid var(--line);border-radius:16px;padding:24px}
+  .trait h4{font-family:var(--display);font-size:1.4rem;font-weight:500;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+  .trait h4 span{color:var(--accent)}
+  .trait p{font-size:.98rem;color:var(--ink-soft);line-height:1.55;margin:0}
+
+  /* PROJECTS */
+  .proj{display:grid;grid-template-columns:200px 1fr auto;gap:26px;align-items:start;padding:30px 0;border-top:1px solid var(--line);transition:padding-left .3s}
+  .proj:hover{padding-left:12px}
+  .proj .meta{font-size:13px;color:var(--ink-soft);letter-spacing:.02em}
+  .proj .meta .role{display:block;font-weight:600;color:var(--ink);margin-top:4px}
+  .proj h3{font-family:var(--display);font-size:1.7rem;font-weight:440;letter-spacing:-.01em;line-height:1.1;margin-bottom:10px;transition:color .2s}
+  .proj:hover h3{color:var(--accent)}
+  .proj p{font-size:1rem;color:var(--ink-soft);max-width:60ch;line-height:1.55}
+  .tags{margin-top:14px;display:flex;flex-wrap:wrap;gap:8px}
+  .tag{font-size:12px;letter-spacing:.03em;color:var(--ink-soft);border:1px solid var(--line);border-radius:30px;padding:4px 12px;background:var(--paper-2)}
+  .proj-link{font-size:13px;font-weight:600;color:var(--accent);white-space:nowrap;display:inline-flex;align-items:center;gap:6px;transition:gap .2s}
+  .proj-link:hover{gap:11px}
+
+  /* BLOG */
+  .blog-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
+  .post{background:var(--paper-2);border:1px solid var(--line);border-radius:18px;padding:28px;display:flex;flex-direction:column;transition:transform .25s,box-shadow .25s,border-color .25s}
+  .post:hover{transform:translateY(-6px);box-shadow:0 28px 50px -30px rgba(40,30,15,.35);border-color:#cdbf9f}
+  .post .date{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:14px}
+  .post h3{font-family:var(--display);font-size:1.35rem;font-weight:480;line-height:1.2;margin-bottom:12px}
+  .post p{font-size:.96rem;color:var(--ink-soft);line-height:1.55;flex:1}
+  .post .more{margin-top:18px;font-size:13px;font-weight:600;color:var(--ink);display:inline-flex;gap:6px;transition:gap .2s}
+  .post:hover .more{gap:11px;color:var(--accent)}
+  .blog-note{margin-top:22px;font-size:13px;color:var(--ink-soft);font-style:italic}
+
+  /* CONTACT */
+  .contact{background:var(--ink);color:var(--paper-2);border-radius:26px;padding:clamp(40px,6vw,72px);text-align:center;position:relative;overflow:hidden}
+  .contact::after{content:"";position:absolute;width:480px;height:480px;background:radial-gradient(circle,var(--accent),transparent 65%);top:-180px;right:-120px;opacity:.4}
+  .contact h2{font-family:var(--display);font-weight:360;font-size:clamp(2.2rem,5.5vw,4rem);line-height:1;letter-spacing:-.02em;position:relative}
+  .contact p{color:#cfc8b8;margin-top:18px;font-size:1.15rem;position:relative}
+  .contact-links{margin-top:36px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap;position:relative}
+  .btn-light{background:var(--paper-2);color:var(--ink)}
+  .btn-light:hover{background:var(--accent);color:#fff}
+  .btn-outline-l{background:transparent;color:var(--paper-2);box-shadow:0 0 0 1.5px rgba(255,255,255,.4)}
+  .btn-outline-l:hover{box-shadow:0 0 0 1.5px var(--paper-2);background:rgba(255,255,255,.1);transform:translateY(-2px)}
+
+  footer{padding:50px 0 40px;text-align:center}
+  footer .brand{justify-content:center;margin-bottom:14px}
+  footer p{font-size:13px;color:var(--ink-soft)}
+
+  /* reveal */
+  .reveal{opacity:0;transform:translateY(28px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1)}
+  .reveal.in{opacity:1;transform:none}
+
+  @media(max-width:880px){
+    .hero-grid,.about-grid{grid-template-columns:1fr;gap:38px}
+    .blog-grid{grid-template-columns:1fr}
+    .proj{grid-template-columns:1fr;gap:8px}
+    .proj .proj-link{margin-top:6px}
+    .nav-links{position:fixed;inset:74px 0 auto 0;flex-direction:column;background:var(--paper-2);border-bottom:1px solid var(--line);padding:22px 28px;gap:20px;align-items:flex-start;transform:translateY(-130%);transition:transform .35s;box-shadow:0 20px 30px -20px rgba(0,0,0,.2)}
+    .nav-links.open{transform:none}
+    .nav-links .btn{align-self:flex-start}
+    .menu-btn{display:flex}
+    .menu-btn.x span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+    .menu-btn.x span:nth-child(2){opacity:0}
+    .menu-btn.x span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+    .reveal{opacity:1;transform:none}
+  }
+</style>
+</head>
+<body>
+
+<header class="nav" id="nav">
+  <div class="wrap nav-row">
+    <a href="#home" class="brand"><span class="mark">M</span>Munn Aneja</a>
+    <button class="menu-btn" id="menuBtn" aria-label="Menu"><span></span><span></span><span></span></button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#home">Home</a></li>
+      <li><a href="#projects">Projects</a></li>
+      <li><a href="#blog">Blog</a></li>
+      <li><a href="#contact">Contact</a></li>
+      <li><a href="resume.pdf" class="btn" target="_blank">Résumé
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></li>
+    </ul>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="wrap">
+    <p class="kicker reveal">Portfolio — 2026</p>
+    <div class="hero-grid">
+      <div>
+        <h1 class="title reveal">Finance,<br>product &amp;<br><em>the will to adapt.</em></h1>
+        <p class="lede reveal">I'm a Finance &amp; Information Systems student at the University of Maryland, currently driving growth as a Product Management Intern at Aquila Clouds. I'm happiest building things in unfamiliar territory.</p>
+        <div class="hero-cta reveal">
+          <a href="#projects" class="btn">See my work
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          <a href="#contact" class="btn btn-soft">Get in touch</a>
+        </div>
+      </div>
+      <aside class="card-facts reveal">
+        <h3>At a glance</h3>
+        <div class="fact"><span class="k">University</span><span class="v">UMD<small>Robert H. Smith</small></span></div>
+        <div class="fact"><span class="k">GPA</span><span class="v">3.97<small>/ 4.0</small></span></div>
+        <div class="fact"><span class="k">OMBA Fellowship</span><span class="v">1 of 33<small>selected</small></span></div>
+        <div class="fact"><span class="k">Class of</span><span class="v">2028</span></div>
+        <div class="fact"><span class="k">Based in</span><span class="v" style="font-size:1.1rem">Bay Area<small>&amp; College Park, MD</small></span></div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="wrap">
+    <div class="sec-head reveal"><span class="sec-num">01</span><h2 class="sec-title">About</h2><span class="rule"></span></div>
+    <div class="about-grid">
+      <div class="reveal">
+        <p>I study finance and information systems because I like sitting where the numbers meet the build. At <span class="hl">Aquila Clouds</span>, I spearhead top-of-funnel growth for AI FinOps and BillOps platforms - running targeted LinkedIn outreach, writing Python automation scripts, launching Meetup events, and building the trackers that turn activity into real pipeline.</p>
+        <p>Before that, I spent five weeks at the Mahama Refugee Camp in Rwanda drafting a legal agreement for Save the Children, helped two founders move from pre-seed to seed at the Founder Institute, and started a sliding-scale tutoring business while I was still in high school.</p>
+        <p>The thread running through all of it is simple: drop me somewhere new and I figure it out. <span class="hl">Adaptability and resilience</span> aren't lines on a page for me - they're how I've operated across very different rooms.</p>
+      </div>
+      <div class="traits reveal">
+        <div class="trait">
+          <h4><span>+</span> Adaptability</h4>
+          <p>From a refugee camp in Kigali to a Bay Area FinOps startup, I've learned to read a new context fast, pick up the tools that matter, and start contributing before I feel ready.</p>
+        </div>
+        <div class="trait">
+          <h4><span>+</span> Resilience</h4>
+          <p>Building a business at 16, growing a fraternity chapter, coaching 50+ kids - I keep showing up through the unglamorous middle, because that's where most of the work actually gets done.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="wrap">
+    <div class="sec-head reveal"><span class="sec-num">02</span><h2 class="sec-title">Projects &amp; experience</h2><span class="rule"></span></div>
+
+    <div class="proj reveal">
+      <div class="meta">Apr 2026 — Present<span class="role">Product Management Intern</span>Pleasanton, CA</div>
+      <div>
+        <h3>Aquila Clouds</h3>
+        <p>Spearheaded top-of-funnel growth for the AI FinOps and BillOps platforms, maximizing MQLs through targeted LinkedIn outreach, Python automation scripts, Meetup event creation, and spreadsheet-based networking trackers - driving customer acquisition that translates into measurable pipeline impact.</p>
+        <div class="tags"><span class="tag">FinOps</span><span class="tag">Growth</span><span class="tag">Python</span><span class="tag">GTM</span></div>
+      </div>
+      <a class="proj-link" href="#contact">Ask me about it →</a>
+    </div>
+
+    <div class="proj reveal">
+      <div class="meta">2025 — Present<span class="role">Recruitment Chair</span>College Park, MD</div>
+      <div>
+        <h3>Sigma Phi Delta</h3>
+        <p>Elected to grow membership in UMD's only STEM social-professional fraternity through event organization and outreach. Designed and built the official chapter website in HTML on GitHub.</p>
+        <div class="tags"><span class="tag">Leadership</span><span class="tag">HTML</span><span class="tag">Recruiting</span></div>
+      </div>
+      <a class="proj-link" href="https://beta-iota.sigmaphidelta.org/" target="_blank">View site →</a>
+    </div>
+
+    <div class="proj reveal">
+      <div class="meta">2024<span class="role">Project Intern</span>Kigali, Rwanda</div>
+      <div>
+        <h3>Save the Children · Kumwe Hub</h3>
+        <p>Worked full-time on education and entrepreneurship initiatives for a refugee community at Mahama Refugee Camp - drafting a legal agreement, running impact analysis on program data, building pitch decks, and managing an office renovation. A research deliverable still lives on Kumwe Hub's website.</p>
+        <div class="tags"><span class="tag">Impact analysis</span><span class="tag">Operations</span><span class="tag">Research</span></div>
+      </div>
+      <a class="proj-link" href="#contact">Ask me about it →</a>
+    </div>
+
+    <div class="proj reveal">
+      <div class="meta">2024 — 2025<span class="role">Project Intern</span>Washington, DC</div>
+      <div>
+        <h3>Founder Institute</h3>
+        <p>Built company pipelines and investment research for early-stage founders at the world's largest pre-seed accelerator, helping two startups advance from pre-seed to seed. Launched and hosted public networking events that consistently reached 100+ attendees.</p>
+        <div class="tags"><span class="tag">Venture</span><span class="tag">Research</span><span class="tag">Events</span></div>
+      </div>
+      <a class="proj-link" href="#contact">Ask me about it →</a>
+    </div>
+
+    <div class="proj reveal">
+      <div class="meta">2023 — 2024<span class="role">Founder &amp; Co-President</span>Bethesda, MD</div>
+      <div>
+        <h3>Hayping.com</h3>
+        <p>Founded a sliding-scale tutoring business to support underserved students, owning hiring, marketing, and finances. Recruited tutors and built a client base of ~20 across local schools and internationally (Singapore, Malaysia), generating ~$2k.</p>
+        <div class="tags"><span class="tag">Founder</span><span class="tag">Marketing</span><span class="tag">Operations</span></div>
+      </div>
+      <a class="proj-link" href="#contact">Ask me about it →</a>
+    </div>
+
+    <div class="proj reveal">
+      <div class="meta">2025 — Present<span class="role">Member &amp; Competitor</span>College Park, MD</div>
+      <div>
+        <h3>Smith Finance Group · Stifel Case</h3>
+        <p>Worked with three teammates to analyze and present Coca-Cola's investment and financial data to Stifel judges, as part of a 200+ member club focused on financial literacy and networking.</p>
+        <div class="tags"><span class="tag">Valuation</span><span class="tag">Teamwork</span><span class="tag">Presenting</span></div>
+      </div>
+      <a class="proj-link" href="#contact">Ask me about it →</a>
+    </div>
+  </div>
+</section>
+
+<!-- BLOG -->
+<section id="blog">
+  <div class="wrap">
+    <div class="sec-head reveal"><span class="sec-num">03</span><h2 class="sec-title">Blog</h2><span class="rule"></span></div>
+    <div class="blog-grid">
+      <article class="post reveal">
+        <span class="date">Coming soon</span>
+        <h3>Selling to finance, not IT</h3>
+        <p>What I'm learning about FinOps go-to-market - and why the person who actually feels cloud-cost pain isn't usually in the server room.</p>
+        <span class="more">Read more →</span>
+      </article>
+      <article class="post reveal">
+        <span class="date">Coming soon</span>
+        <h3>Five weeks at Mahama</h3>
+        <p>Notes on adaptability from a refugee camp in Rwanda, and what working with a community taught me that no classroom did.</p>
+        <span class="more">Read more →</span>
+      </article>
+      <article class="post reveal">
+        <span class="date">Coming soon</span>
+        <h3>Building a business at 16</h3>
+        <p>How a sliding-scale tutoring company turned into my first real lesson in resilience, pricing, and getting comfortable with no.</p>
+        <span class="more">Read more →</span>
+      </article>
+    </div>
+    <p class="blog-note">↑ These are starter posts - swap in your own writing any time. I can wire up a real multi-post blog once you pick a design.</p>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="wrap">
+    <div class="contact reveal">
+      <h2>Let's build something.</h2>
+      <p>Open to internships and roles in finance, product, and early-stage startups.</p>
+      <div class="contact-links">
+        <a href="mailto:munn@aneja.us" class="btn btn-light">munn@aneja.us</a>
+        <a href="https://linkedin.com/in/munn-aneja" target="_blank" class="btn btn-outline-l">LinkedIn</a>
+        <a href="resume.pdf" target="_blank" class="btn btn-outline-l">Download résumé</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="brand"><span class="mark">M</span>Munn Aneja</div>
+    <p>Finance &amp; Information Systems · University of Maryland · © 2026</p>
+  </div>
+</footer>
+
+<script>
+  // sticky nav bg
+  const nav=document.getElementById('nav');
+  addEventListener('scroll',()=>nav.classList.toggle('scrolled',scrollY>20));
+  // mobile menu
+  const mb=document.getElementById('menuBtn'),nl=document.getElementById('navLinks');
+  mb.addEventListener('click',()=>{nl.classList.toggle('open');mb.classList.toggle('x')});
+  nl.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{nl.classList.remove('open');mb.classList.remove('x')}));
+  // reveal on scroll
+  const io=new IntersectionObserver((es)=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12});
+  document.querySelectorAll('.reveal').forEach((el,i)=>{el.style.transitionDelay=(i%4*60)+'ms';io.observe(el)});
+</script>
+</body>
+</html>
