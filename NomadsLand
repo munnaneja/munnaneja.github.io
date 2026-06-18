@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nomads Land | Score any location before you book</title>
+<meta name="description" content="Type a specific address or place. Nomads Land pulls real nearby amenities and outdoors from OpenStreetMap, adds regional price & safety, and scores it by how you get around — before you pay.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='5' fill='%232E5240'/%3E%3Cpath d='M10 16.5l4 4 8-9' stroke='%23F4F2EC' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@500;600;700;800;900&family=Newsreader:opsz,wght@6..72,600;6..72,700&family=Spline+Sans+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{
+  --paper:#F4F2EC; --paper-deep:#ECE9E0; --ink:#191811; --ink-soft:#5F5A4E;
+  --line:#DAD5C7; --line-soft:#E6E2D6; --green:#2E5240; --green-soft:#E3EBE2;
+  --amber:#A8500F; --amber-soft:#F4E5D6; --plane:#2E6FB0; --sky:#D2E5F2;
+  --mono:'Spline Sans Mono',ui-monospace,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Figtree',system-ui,sans-serif;background:var(--paper);color:var(--ink);font-size:17px;line-height:1.5;font-weight:500;-webkit-font-smoothing:antialiased}
+::selection{background:var(--green-soft);color:var(--green)}
+a{color:inherit}
+button:focus-visible,input:focus-visible{outline:3px solid var(--green);outline-offset:3px}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+
+.dochead{border-bottom:1px solid var(--line);background:var(--sky)}
+.dochead .wrap{display:flex;justify-content:space-between;align-items:center;height:46px;font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:#3F566B;font-weight:500}
+.dochead b{color:var(--ink);font-weight:700}
+header.app{background:linear-gradient(180deg,var(--sky) 0%,#E3EEF5 55%,var(--paper) 100%);border-bottom:1px solid var(--line);padding:34px 0 38px}
+.wordmark{font-family:'Newsreader',serif;font-weight:700;font-size:30px;letter-spacing:-.01em;display:flex;align-items:center;gap:11px}
+.wordmark svg{width:30px;height:30px}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--plane);font-weight:700;margin:18px 0 8px}
+header.app h1{font-family:'Newsreader',serif;font-weight:700;font-size:clamp(30px,5vw,46px);line-height:1.03;letter-spacing:-.02em;max-width:20ch}
+header.app p.lede{font-size:clamp(16px,2vw,19px);font-weight:700;color:#37506A;max-width:60ch;margin-top:12px}
+
+main{padding:34px 0 90px}
+.grid{display:grid;grid-template-columns:380px 1fr;gap:28px;align-items:start}
+@media(max-width:880px){.grid{grid-template-columns:1fr}}
+
+.panel{background:#FFFDF8;border:1px solid var(--line);border-radius:18px;padding:24px;box-shadow:0 2px 4px rgba(25,24,17,.05),0 24px 48px -34px rgba(25,24,17,.4);position:sticky;top:18px}
+.panel h2{font-family:'Newsreader',serif;font-size:23px;font-weight:700;letter-spacing:-.01em;margin-bottom:4px}
+.panel .sub{font-size:14.5px;color:var(--ink-soft);font-weight:600;margin-bottom:18px}
+.field-lbl{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-soft);font-weight:700;margin-bottom:7px}
+.acwrap{position:relative}
+.address{width:100%;font-family:'Figtree',sans-serif;font-size:16px;font-weight:600;padding:14px 15px;border:2px solid var(--line);border-radius:11px;background:#fff;color:var(--ink)}
+.address::placeholder{color:#9AA7B2;font-weight:500}
+.tip{font-size:12.5px;color:var(--ink-soft);font-weight:600;margin-top:8px;line-height:1.45}
+.tip b{color:var(--green)}
+.ac{position:absolute;top:calc(100% + 6px);left:0;right:0;background:#fff;border:1.5px solid var(--line);border-radius:12px;box-shadow:0 18px 40px -18px rgba(25,24,17,.45);z-index:60;overflow:hidden;display:none}
+.ac.show{display:block}
+.ac-item{padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--line-soft);display:flex;flex-direction:column;gap:2px}
+.ac-item:last-child{border-bottom:none}
+.ac-item:hover,.ac-item.active{background:var(--green-soft)}
+.ac-item .p{font-weight:800;font-size:14.5px}
+.ac-item .c{font-size:12px;color:var(--ink-soft);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ac-msg{padding:11px 14px;font-size:13px;color:var(--ink-soft);font-weight:600;display:flex;align-items:center;gap:8px}
+.ac-dot{width:13px;height:13px;border:2px solid var(--line);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite}
+.examples{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}
+.chip{font-family:var(--mono);font-size:11px;letter-spacing:.04em;border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:6px 11px;cursor:pointer;font-weight:700;color:var(--ink-soft);transition:.15s}
+.chip:hover{border-color:var(--green);color:var(--green);background:var(--green-soft)}
+.modes{display:flex;gap:7px;margin-top:7px}
+.mode{flex:1;border:1.5px solid var(--line);border-radius:11px;padding:10px 6px;text-align:center;cursor:pointer;font-weight:800;font-size:13.5px;background:#fff;transition:.15s;color:var(--ink-soft)}
+.mode .mi{display:block;font-size:19px;margin-bottom:3px;line-height:1}
+.mode:hover{border-color:var(--line-soft)}
+.mode.active{border-color:var(--green);background:var(--green-soft);color:var(--green)}
+.prio-head{margin:22px 0 10px;display:flex;justify-content:space-between;align-items:baseline}
+.prio-head .field-lbl{margin:0}
+.prio-head .hint{font-size:11.5px;color:var(--ink-soft);font-weight:600}
+.block-lbl{margin:22px 0 7px}
+.prios{display:flex;flex-direction:column;gap:8px}
+.prio{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1.5px solid var(--line-soft);border-radius:11px;padding:9px 13px;background:#fff;cursor:pointer;transition:.15s;user-select:none}
+.prio:hover{border-color:var(--line)}
+.prio .pname{font-weight:800;font-size:14.5px;display:flex;align-items:center;gap:9px}
+.prio .pico{font-size:16px;line-height:1}
+.prio .weight{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;border-radius:7px;padding:5px 9px;border:1.5px solid}
+.weight.w0{color:#9AA7B2;border-color:var(--line)}
+.weight.w1{color:var(--ink-soft);border-color:var(--line)}
+.weight.w2{color:var(--green);border-color:var(--green);background:var(--green-soft)}
+.prio.skip{opacity:.55}
+.go{width:100%;margin-top:20px;background:var(--green);color:#F4F2EC;border:none;font-family:'Figtree',sans-serif;font-size:17px;font-weight:800;padding:15px;border-radius:12px;cursor:pointer;transition:background .2s}
+.go:hover{background:#23402F}
+.go:disabled{opacity:.5;cursor:not-allowed}
+
+.stage{min-height:200px}
+.status{background:#FFFDF8;border:1px dashed var(--line);border-radius:18px;padding:40px 28px;text-align:center;color:var(--ink-soft)}
+.status.err{border-color:var(--amber);border-style:solid;color:var(--amber);background:var(--amber-soft)}
+.status .big{font-family:'Newsreader',serif;font-size:23px;font-weight:700;color:var(--ink);margin-bottom:6px}
+.status.err .big{color:var(--amber)}
+.spinner{width:34px;height:34px;border:3px solid var(--line);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.ticket{background:#FFFDF8;border-radius:20px;overflow:hidden;box-shadow:0 2px 4px rgba(25,24,17,.06),0 30px 60px -34px rgba(25,24,17,.4);margin-bottom:24px}
+.ticket-head{display:flex;align-items:center;gap:12px;padding:15px 24px;color:#fff;font-family:var(--mono);text-transform:uppercase}
+.pass-ok .ticket-head{background:var(--green)}
+.pass-mid .ticket-head{background:var(--plane)}
+.pass-bad .ticket-head{background:var(--amber)}
+.th-brand{font-weight:700;display:flex;align-items:center;gap:10px;font-size:14px;letter-spacing:.08em}
+.th-brand svg{width:22px;height:22px;fill:currentColor}
+.th-label{font-weight:500;font-size:12px;letter-spacing:.14em;margin-left:auto;opacity:.92}
+.ticket-main{display:grid;grid-template-columns:1fr 232px}
+@media(max-width:560px){.ticket-main{grid-template-columns:1fr}}
+.ticket-info{padding:24px 26px}
+.route .lbl{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;margin-bottom:3px}
+.route .city{font-family:'Newsreader',serif;font-size:clamp(23px,3.3vw,31px);font-weight:700;line-height:1.02;letter-spacing:-.01em}
+.route .where{font-size:13px;color:var(--ink-soft);font-weight:600;margin-top:5px}
+.ticket-sub{font-size:14.5px;font-weight:700;margin:15px 0 13px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pass-ok .ticket-sub{color:var(--green)}
+.pass-mid .ticket-sub{color:var(--plane)}
+.pass-bad .ticket-sub{color:var(--amber)}
+.modepill{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;background:var(--paper-deep);color:var(--ink-soft);border-radius:999px;padding:4px 10px;font-weight:700}
+.factors{display:grid;grid-template-columns:1fr 1fr;gap:0 26px}
+@media(max-width:560px){.factors{grid-template-columns:1fr}}
+.frow{border-top:1px dashed var(--line);padding:10px 0}
+.frow .ftop{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.frow .k{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;display:flex;align-items:center;gap:6px}
+.frow .k .ic{font-size:14px}
+.esttag{font-family:var(--mono);font-size:8px;letter-spacing:.08em;background:var(--paper-deep);color:var(--ink-soft);border-radius:5px;padding:2px 4px;font-weight:700;text-transform:uppercase}
+.frow .v{font-family:var(--mono);font-size:11px;font-weight:700;white-space:nowrap;color:var(--ink-soft);text-align:right}
+.frow.skipped{opacity:.4}
+.bar{height:6px;border-radius:4px;background:var(--line-soft);margin-top:6px;overflow:hidden}
+.bar > i{display:block;height:100%;border-radius:4px;transition:width .35s ease}
+.bar.good > i{background:var(--green)}
+.bar.weak > i{background:var(--amber)}
+.ticket-stub{position:relative;border-left:2px dashed var(--line);padding:24px 18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;background:#FBFAF3}
+.ticket-stub::before,.ticket-stub::after{content:"";position:absolute;left:-13px;width:26px;height:26px;border-radius:50%;background:var(--paper)}
+.ticket-stub::before{top:-13px}.ticket-stub::after{bottom:-13px}
+.stub-score .lbl{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;margin-bottom:2px}
+.stub-score .n{font-family:'Newsreader',serif;font-size:62px;font-weight:700;line-height:.9;letter-spacing:-.03em}
+.pass-ok .n{color:var(--green)}.pass-mid .n{color:var(--plane)}.pass-bad .n{color:var(--amber)}
+.stub-stamp{border:3px solid;border-radius:9px;padding:7px 14px;font-family:var(--mono);font-size:13px;letter-spacing:.14em;text-transform:uppercase;font-weight:700}
+.pass-ok .stub-stamp{color:var(--green);border-color:var(--green);transform:rotate(-5deg)}
+.pass-mid .stub-stamp{color:var(--plane);border-color:var(--plane);transform:rotate(-3deg)}
+.pass-bad .stub-stamp{color:var(--amber);border-color:var(--amber);transform:rotate(4deg)}
+.verdict{font-family:'Newsreader',serif;font-size:18px;font-weight:600;line-height:1.35;padding:18px 26px 22px;border-top:1px solid var(--line);color:var(--ink)}
+.verdict b{color:var(--green)}
+
+#map{height:340px;border-radius:18px;border:1px solid var(--line);overflow:hidden;box-shadow:0 2px 4px rgba(25,24,17,.05)}
+.legend{display:flex;flex-wrap:wrap;gap:13px;margin-top:12px;font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--ink-soft);font-weight:700}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.dot{width:11px;height:11px;border-radius:50%;display:inline-block;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.15)}
+.foot{margin-top:30px;font-size:13px;color:var(--ink-soft);font-weight:600;line-height:1.6;border-top:1px solid var(--line);padding-top:18px}
+.foot b{color:var(--ink)}
+/* ===== shared site chrome (nav + footer) ===== */
+.site-nav{position:sticky;top:0;z-index:120;background:rgba(244,242,236,.93);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.site-nav-inner{display:flex;align-items:center;justify-content:space-between;height:62px}
+.site-brand{display:flex;align-items:center;gap:9px;font-family:'Newsreader',serif;font-weight:700;font-size:22px;letter-spacing:-.01em;text-decoration:none;color:var(--ink)}
+.site-brand svg{width:24px;height:24px;flex:none}
+.site-links{display:flex;align-items:center;gap:22px;list-style:none;margin:0;padding:0}
+.site-links a{text-decoration:none;font-size:15px;font-weight:700;color:var(--ink-soft);transition:color .2s}
+.site-links a:hover,.site-links a.active{color:var(--ink)}
+.site-cta{background:var(--green);color:#F4F2EC !important;padding:10px 17px;border-radius:10px;font-size:14px;font-weight:800;white-space:nowrap}
+.site-cta:hover{background:#23402F}
+#score{scroll-margin-top:78px}
+.site-foot{border-top:1px solid var(--line);background:var(--paper);padding:40px 0 52px}
+.site-foot-inner{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;align-items:baseline}
+.site-foot-brand{display:flex;align-items:center;gap:9px;font-family:'Newsreader',serif;font-weight:700;font-size:22px;color:var(--ink);text-decoration:none}
+.site-foot-brand svg{width:22px;height:22px}
+.site-foot-tag{font-size:14px;font-weight:600;color:var(--ink-soft);margin-top:6px}
+.site-foot-links{display:flex;gap:22px;list-style:none;margin:0;padding:0;flex-wrap:wrap}
+.site-foot-links a{font-size:14px;font-weight:600;color:var(--ink-soft);text-decoration:none}
+.site-foot-links a:hover{color:var(--ink)}
+.site-copy{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:#A29C8C;margin-top:16px;text-transform:uppercase;font-weight:500}
+@media(max-width:560px){.site-links .hideSm{display:none}}
+</style>
+</head>
+<body>
+<nav class="site-nav"><div class="wrap site-nav-inner">
+  <a class="site-brand" href="index.html">
+    <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="26" height="26" rx="5" fill="#2E5240"/><path d="M10 16.5l4 4 8-9" stroke="#F4F2EC" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Nomads Land
+  </a>
+  <ul class="site-links">
+    <li><a class="active" href="index.html">Score a location</a></li>
+    <li><a class="hideSm" href="how-it-works.html">How it works</a></li>
+    <li><a class="site-cta" href="#score">Score a location</a></li>
+  </ul>
+</div></nav>
+<div class="dochead"><div class="wrap"><span>Nomads Land · Live location report</span><span><b>OpenStreetMap</b> + regional indices</span></div></div>
+
+<header class="app"><div class="wrap">
+  <div class="kicker">Pre-booking location report</div>
+  <h1>Type the exact spot. Get it scored.</h1>
+  <p class="lede">A home address, a listing's street, a hotel, or a neighborhood — anything location-specific works, and the more precise you are, the sharper the read. Amenities, outdoors, price and safety, timed by how you get around.</p>
+</div></header>
+
+<main id="score"><div class="wrap"><div class="grid">
+
+  <!-- INPUT -->
+  <section class="panel">
+    <h2>Score a location</h2>
+    <div class="sub">Type a specific place, then pick it from the list.</div>
+
+    <label class="field-lbl" for="addr">Address or place</label>
+    <div class="acwrap">
+      <input id="addr" class="address" type="text" placeholder="e.g. 7000 Wisconsin Ave, Bethesda MD" autocomplete="off" spellcheck="false">
+      <div class="ac" id="ac"></div>
+    </div>
+    <div class="tip">📍 <b>The more specific, the better.</b> A full street address beats a neighborhood, which beats a city. Listings, hotels, and landmarks all work.</div>
+    <div class="examples" id="examples"></div>
+
+    <label class="field-lbl block-lbl">How you get around</label>
+    <div class="modes" id="modes"></div>
+
+    <div class="prio-head">
+      <span class="field-lbl">Your priorities</span>
+      <span class="hint">tap to toggle</span>
+    </div>
+    <div class="prios" id="prios"></div>
+
+    <button class="go" id="go">Score this location</button>
+  </section>
+
+  <!-- OUTPUT -->
+  <section class="stage">
+    <div id="status" class="status">
+      <div class="big">No location scored yet</div>
+      <div>Type a specific place, pick it from the list, choose your transport, and hit <b>Score this location</b>. Try an example for an instant demo.</div>
+    </div>
+    <div id="result" style="display:none"></div>
+    <div id="mapwrap" style="display:none">
+      <div id="map"></div>
+      <div class="legend">
+        <span><i class="dot" style="background:#2E5240"></i>Your spot</span>
+        <span><i class="dot" style="background:#A8500F"></i>Gym</span>
+        <span><i class="dot" style="background:#2E6FB0"></i>Food</span>
+        <span><i class="dot" style="background:#8E44AD"></i>Nightlife</span>
+        <span><i class="dot" style="background:#16887A"></i>Groceries</span>
+        <span><i class="dot" style="background:#C99700"></i>Café</span>
+        <span><i class="dot" style="background:#1F7A3F"></i>Outdoors</span>
+      </div>
+    </div>
+    <div class="foot">
+      <b>How it works:</b> Nomads Land pulls amenities (~4&nbsp;km, points and building outlines) and outdoors (beaches, peaks, parks up to ~12&nbsp;km) from OpenStreetMap in one request, racing several mirrors for speed, then scores them by your transport mode (walk / bike / drive = 80 / 250 / 500&nbsp;m&nbsp;per&nbsp;min). Switching mode or priorities re-scores instantly. <b>Price &amp; safety are regional estimates</b> (country/city-level indices, marked <em>est.</em>) — directional, not block-level. It's a prototype: treat the score as a fast sanity check, not gospel.
+    </div>
+  </section>
+
+</div></div></main>
+
+<footer class="site-foot"><div class="wrap site-foot-inner">
+  <div>
+    <a class="site-foot-brand" href="index.html">
+      <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="26" height="26" rx="5" fill="#2E5240"/><path d="M10 16.5l4 4 8-9" stroke="#F4F2EC" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Nomads Land
+    </a>
+    <p class="site-foot-tag">Pre-booking location reports for long stays.</p>
+  </div>
+  <ul class="site-foot-links">
+    <li><a href="#score">Score a location</a></li>
+    <li><a href="how-it-works.html">How it works</a></li>
+    <li><a href="how-it-works.html#checks">What we check</a></li>
+    <li><a href="mailto:hello@nomadsland.app">Contact</a></li>
+  </ul>
+</div>
+<div class="wrap"><p class="site-copy">&copy; 2026 Nomads Land &middot; Live data from OpenStreetMap &middot; Price &amp; safety are regional estimates</p></div>
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ---------- config ----------
+const AMEN_R = 4000, OUT_R = 12000, PARK_R = 3500, RESERVE_R = 8000;
+const OVERPASS = [
+  "https://overpass-api.de/api/interpreter",
+  "https://overpass.kumi.systems/api/interpreter",
+  "https://overpass.private.coffee/api/interpreter"
+];
+const MODES = {
+  walk: {label:"Walk", ico:"🚶", mpm:80,  reachMin:12, unit:"walk",  best:5, worst:30},
+  bike: {label:"Bike", ico:"🚲", mpm:250, reachMin:12, unit:"bike",  best:4, worst:20},
+  car:  {label:"Car",  ico:"🚗", mpm:500, reachMin:12, unit:"drive", best:3, worst:15}
+};
+const FACTORS = [
+  {key:"gym",   label:"Gym",        ico:"🏋️", type:"nearest"},
+  {key:"food",  label:"Food",       ico:"🍽️", type:"count", target:15},
+  {key:"night", label:"Nightlife",  ico:"🍸",  type:"count", target:8},
+  {key:"groc",  label:"Groceries",  ico:"🛒",  type:"nearest"},
+  {key:"work",  label:"Café / work",ico:"☕",  type:"count", target:6},
+  {key:"quiet", label:"Quiet",      ico:"😴",  type:"quiet"},
+  {key:"out",   label:"Outdoors",   ico:"🏔️", type:"outdoors"},
+  {key:"price", label:"Price",      ico:"💲",  type:"region", est:true},
+  {key:"safety",label:"Safety",     ico:"🛡️", type:"region", est:true}
+];
+const EXAMPLES = ["Bethesda, Maryland","Alfama, Lisbon","Canggu, Bali","Antigua, Guatemala","San Francisco, CA"];
+
+// outdoors distance thresholds (metres): great<=g (score 100), >=z (score 0)
+const OUT_GOOD = { beach:{g:2000,z:OUT_R}, peak:{g:3000,z:OUT_R}, park:{g:600,z:PARK_R}, reserve:{g:3000,z:RESERVE_R} };
+const KIND_LABEL = { beach:"Beach", peak:"Peak", park:"Park", reserve:"Reserve" };
+
+// regional cost-of-living + safety indices — approximate snapshot, NOT live.
+// c: cost of living (~NYC=100, higher = pricier). s: safety index 0-100 (higher = safer).
+const REGION = {
+  US:{c:70,s:53}, CA:{c:67,s:57}, MX:{c:36,s:44}, GT:{c:34,s:39}, PT:{c:50,s:70}, ES:{c:50,s:67},
+  FR:{c:64,s:52}, DE:{c:62,s:63}, GB:{c:67,s:56}, IT:{c:58,s:57}, NL:{c:67,s:66}, CH:{c:104,s:78},
+  TH:{c:38,s:60}, ID:{c:35,s:54}, VN:{c:36,s:56}, CO:{c:33,s:44}, BR:{c:37,s:38}, AR:{c:37,s:43},
+  JP:{c:60,s:78}, AU:{c:73,s:57}, NZ:{c:70,s:60}, IN:{c:25,s:56}, PL:{c:45,s:72}, CZ:{c:50,s:74},
+  GR:{c:52,s:60}, TR:{c:36,s:60}, AE:{c:62,s:84}, ZA:{c:39,s:24}, EG:{c:28,s:50}, MA:{c:34,s:56},
+  PH:{c:37,s:45}, MY:{c:39,s:56}, SG:{c:81,s:78}, KR:{c:62,s:74}, CR:{c:50,s:55}, PA:{c:49,s:48},
+  PE:{c:34,s:44}, CL:{c:46,s:52}, IE:{c:70,s:57}, BE:{c:63,s:56}, AT:{c:62,s:73}, SE:{c:65,s:56},
+  NO:{c:84,s:66}, DK:{c:75,s:74}, HU:{c:43,s:70}, RO:{c:40,s:69}, HR:{c:48,s:73}, GE:{c:34,s:74}
+};
+const CITY_OVERRIDE = {
+  "san francisco":{c:104,s:40}, "new york":{c:100,s:54}, "los angeles":{c:82,s:44}, "miami":{c:80,s:46},
+  "london":{c:82,s:52}, "paris":{c:74,s:48}, "zurich":{c:118,s:80}, "geneva":{c:112,s:78},
+  "singapore":{c:81,s:78}, "tokyo":{c:66,s:78}, "sydney":{c:80,s:57}, "dubai":{c:62,s:84},
+  "lisbon":{c:52,s:70}, "mexico city":{c:42,s:38}, "amsterdam":{c:74,s:65}, "barcelona":{c:55,s:62},
+  "bali":{c:36,s:56}, "canggu":{c:38,s:56}, "antigua":{c:36,s:46}
+};
+const DEFAULT_REGION = {c:55,s:50};
+
+// state
+const weights = {gym:1,food:1,night:1,groc:1,work:1,quiet:1,out:1,price:1,safety:1};
+const WLABEL = {0:"Skip",1:"Matters",2:"High"};
+let mode = "walk";
+let cache = null;        // { geo, els:[amenities], out:[outdoor features], region:{c,s,basis} }
+let selected = null;
+
+// ---------- helpers ----------
+const $ = s => document.querySelector(s);
+function haversine(a,b){
+  const R=6371000, t=Math.PI/180;
+  const dLat=(b.lat-a.lat)*t, dLon=(b.lon-a.lon)*t, la1=a.lat*t, la2=b.lat*t;
+  const x=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;
+  return 2*R*Math.asin(Math.sqrt(x));
+}
+const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+function timeScore(min,best,worst){ if(min==null) return 0; if(min<=best) return 100; if(min>=worst) return 0; return Math.round((worst-min)/(worst-best)*100); }
+function countScore(n,target){ return Math.round(clamp(n/target,0,1)*100); }
+function quietScore(walkMin){ if(walkMin==null) return 100; if(walkMin>=8) return 100; if(walkMin<=0.5) return 6; return Math.round(walkMin/8*100); }
+function distScore(d,g,z){ if(d==null) return 0; if(d<=g) return 100; if(d>=z) return 0; return Math.round((z-d)/(z-g)*100); }
+function fmtKm(m){ return m>=1000? (m/1000).toFixed(m<10000?1:0)+" km" : Math.round(m)+" m"; }
+function shortName(g){
+  const a=g.address||{};
+  const place=a.neighbourhood||a.suburb||a.city_district||a.quarter||a.hamlet||a.city||a.town||a.village||a.road||g.name||(g.display_name||"").split(",")[0];
+  const city=a.city||a.town||a.village||a.municipality||a.county||a.state||"";
+  return {lat:+g.lat, lon:+g.lon, place, city, cc:(a.country_code||"").toUpperCase(), country:a.country||"", full:g.display_name};
+}
+function regionFor(geo){
+  const keys=[geo.place,geo.city,geo.country].filter(Boolean).map(x=>x.toLowerCase());
+  for(const k of keys){ if(CITY_OVERRIDE[k]) return {...CITY_OVERRIDE[k], basis:(geo.place||geo.city)+" (city est.)"}; }
+  if(geo.cc && REGION[geo.cc]) return {...REGION[geo.cc], basis:(geo.country||geo.cc)+" (country est.)"};
+  return {...DEFAULT_REGION, basis:"global avg (est.)"};
+}
+function affordScore(c){ return clamp(Math.round((108-c)/78*100),0,100); }   // cheaper => higher
+function costTier(c){ return c<40?"$":c<58?"$$":c<80?"$$$":"$$$$"; }
+function costWord(c){ return c<40?"cheap":c<58?"moderate":c<80?"pricey":"expensive"; }
+function safetyWord(s){ return s>=72?"Very safe":s>=58?"Safe":s>=42?"Mixed":"Caution"; }
+
+// ---------- build UI ----------
+const exWrap=$("#examples");
+EXAMPLES.forEach(e=>{ const b=document.createElement("button"); b.className="chip"; b.textContent=e; b.onclick=()=>{ selected=null; $("#addr").value=e; hideAC(); run(); }; exWrap.appendChild(b); });
+
+const modeWrap=$("#modes");
+Object.entries(MODES).forEach(([k,m])=>{
+  const b=document.createElement("button"); b.className="mode"+(k===mode?" active":""); b.dataset.k=k;
+  b.innerHTML=`<span class="mi">${m.ico}</span>${m.label}`;
+  b.onclick=()=>{ mode=k; document.querySelectorAll(".mode").forEach(x=>x.classList.toggle("active",x.dataset.k===k)); if(cache) recompute(); };
+  modeWrap.appendChild(b);
+});
+
+const prioWrap=$("#prios");
+FACTORS.forEach(f=>{
+  const row=document.createElement("div"); row.className="prio"; row.dataset.k=f.key;
+  row.innerHTML=`<span class="pname"><span class="pico">${f.ico}</span>${f.label}${f.est?' <span class="esttag">est</span>':''}</span><span class="weight w1">${WLABEL[1]}</span>`;
+  row.onclick=()=>{ weights[f.key]=(weights[f.key]+1)%3; paintPrio(f.key,row); if(cache) recompute(); };
+  prioWrap.appendChild(row);
+});
+function paintPrio(k,row){ const w=weights[k], tag=row.querySelector(".weight"); tag.className="weight w"+w; tag.textContent=WLABEL[w]; row.classList.toggle("skip",w===0); }
+
+$("#go").onclick=()=>{ hideAC(); run(); };
+
+// ---------- autocomplete ----------
+const acBox=$("#ac"); const addr=$("#addr");
+let acItems=[], acActive=-1, acTimer=null, acSeq=0;
+function hideAC(){ acBox.classList.remove("show"); acBox.innerHTML=""; acItems=[]; acActive=-1; }
+function showACMsg(html){ acBox.innerHTML=`<div class="ac-msg">${html}</div>`; acBox.classList.add("show"); }
+async function fetchAC(q){
+  const seq=++acSeq;
+  showACMsg(`<span class="ac-dot"></span>Searching…`);
+  try{
+    const url=`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&accept-language=en&addressdetails=1&q=${encodeURIComponent(q)}`;
+    const r=await fetch(url,{headers:{"Accept":"application/json"}});
+    const j=await r.json();
+    if(seq!==acSeq) return;
+    if(!j.length){ showACMsg("No matches — try adding a city or country."); return; }
+    renderAC(j.map(shortName));
+  }catch(e){ if(seq===acSeq) showACMsg("Search unavailable — type the full place and hit Score."); }
+}
+function renderAC(items){
+  acItems=items; acActive=-1;
+  acBox.innerHTML=items.map((it,i)=>`<div class="ac-item" data-i="${i}"><span class="p">${it.place}${it.city&&it.city!==it.place?`, ${it.city}`:""}</span><span class="c">${(it.full||"").replace(/</g,"")}</span></div>`).join("");
+  acBox.classList.add("show");
+  acBox.querySelectorAll(".ac-item").forEach(el=>{ el.onclick=()=>pickAC(+el.dataset.i); });
+}
+function pickAC(i){
+  const it=acItems[i]; if(!it) return;
+  selected=it;
+  addr.value=it.place+(it.city&&it.city!==it.place?`, ${it.city}`:"");
+  hideAC(); run();
+}
+addr.addEventListener("input",()=>{
+  selected=null;
+  const q=addr.value.trim();
+  clearTimeout(acTimer);
+  if(q.length<3){ hideAC(); return; }
+  acTimer=setTimeout(()=>fetchAC(q),280);
+});
+addr.addEventListener("keydown",e=>{
+  if(!acBox.classList.contains("show")||!acItems.length){ if(e.key==="Enter"){ hideAC(); run(); } return; }
+  if(e.key==="ArrowDown"){ e.preventDefault(); acActive=(acActive+1)%acItems.length; paintAC(); }
+  else if(e.key==="ArrowUp"){ e.preventDefault(); acActive=(acActive-1+acItems.length)%acItems.length; paintAC(); }
+  else if(e.key==="Enter"){ e.preventDefault(); if(acActive>=0) pickAC(acActive); else { hideAC(); run(); } }
+  else if(e.key==="Escape"){ hideAC(); }
+});
+function paintAC(){ acBox.querySelectorAll(".ac-item").forEach((el,i)=>el.classList.toggle("active",i===acActive)); }
+document.addEventListener("click",e=>{ if(!e.target.closest(".acwrap")) hideAC(); });
+
+// ---------- data ----------
+async function geocode(q){
+  const url=`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&accept-language=en&addressdetails=1&q=${encodeURIComponent(q)}`;
+  const r=await fetch(url,{headers:{"Accept":"application/json"}});
+  if(!r.ok) throw new Error("Geocoder unavailable ("+r.status+")");
+  const j=await r.json();
+  if(!j.length) throw new Error("Couldn't find that place. Try adding a city or country.");
+  return shortName(j[0]);
+}
+async function overpass(lat,lon){
+  // amenities and outdoors as separate sets, each output-capped to bound payload in dense areas
+  const q=`[out:json][timeout:20];
+  (
+    nwr["leisure"~"^(fitness_centre|sports_centre|fitness_station)$"](around:${AMEN_R},${lat},${lon});
+    nwr["amenity"="gym"](around:${AMEN_R},${lat},${lon});
+    nwr["amenity"~"^(restaurant|fast_food|cafe|bar|pub|nightclub)$"](around:${AMEN_R},${lat},${lon});
+    nwr["shop"~"^(supermarket|convenience|greengrocer)$"](around:${AMEN_R},${lat},${lon});
+  )->.a;
+  (
+    nwr["natural"="beach"](around:${OUT_R},${lat},${lon});
+    node["natural"="peak"](around:${OUT_R},${lat},${lon});
+    nwr["leisure"="park"](around:${PARK_R},${lat},${lon});
+    nwr["leisure"="nature_reserve"](around:${RESERVE_R},${lat},${lon});
+  )->.o;
+  .a out center 400;
+  .o out center 150;`;
+  // race all mirrors — first successful response wins
+  const tries=OVERPASS.map(ep=>fetch(ep,{method:"POST",body:"data="+encodeURIComponent(q)}).then(async r=>{
+    if(!r.ok) throw new Error("Overpass "+r.status);
+    const j=await r.json(); return j.elements||[];
+  }));
+  try{ return await Promise.any(tries); }
+  catch(e){ throw new Error("Map data servers are busy — wait a few seconds and retry."); }
+}
+function classify(t){
+  if(t.leisure==="fitness_centre"||t.leisure==="sports_centre"||t.leisure==="fitness_station"||t.amenity==="gym") return {grp:"a",cat:"gym"};
+  if(t.amenity==="restaurant"||t.amenity==="fast_food") return {grp:"a",cat:"food"};
+  if(t.amenity==="cafe") return {grp:"a",cat:"work"};
+  if(t.amenity==="bar"||t.amenity==="pub"||t.amenity==="nightclub") return {grp:"a",cat:"night"};
+  if(t.shop==="supermarket"||t.shop==="convenience"||t.shop==="greengrocer") return {grp:"a",cat:"groc"};
+  if(t.natural==="beach") return {grp:"o",kind:"beach"};
+  if(t.natural==="peak") return {grp:"o",kind:"peak"};
+  if(t.leisure==="park") return {grp:"o",kind:"park"};
+  if(t.leisure==="nature_reserve") return {grp:"o",kind:"reserve"};
+  return null;
+}
+
+// ---------- scoring ----------
+function buildModel(){
+  const M=MODES[mode];
+  const reachDist=Math.min(M.mpm*M.reachMin, AMEN_R);
+  const cats={gym:[],food:[],work:[],night:[],groc:[]};
+  cache.els.forEach(e=>cats[e.cat].push(e));
+  Object.values(cats).forEach(a=>a.sort((x,y)=>x._m-y._m));
+  const nearMin = arr => arr.length? arr[0]._m/M.mpm : null;
+  const nearWalk= arr => arr.length? arr[0]._m/80   : null;
+  const inReach = arr => arr.filter(x=>x._m<=reachDist).length;
+
+  const f={};
+  f.gym  ={score:timeScore(nearMin(cats.gym),M.best,M.worst), min:nearMin(cats.gym)};
+  f.food ={score:countScore(inReach(cats.food),15),  n:inReach(cats.food)};
+  f.night={score:countScore(inReach(cats.night),8),  n:inReach(cats.night)};
+  f.groc ={score:timeScore(nearMin(cats.groc),M.best,M.worst), min:nearMin(cats.groc)};
+  f.work ={score:countScore(inReach(cats.work),6),   n:inReach(cats.work)};
+  f.quiet={score:quietScore(nearWalk(cats.night)),   min:nearWalk(cats.night)};
+
+  // outdoors — best single nature access + a small variety bonus
+  const groups={beach:[],peak:[],park:[],reserve:[]};
+  cache.out.forEach(o=>groups[o.kind]&&groups[o.kind].push(o));
+  Object.values(groups).forEach(a=>a.sort((x,y)=>x._m-y._m));
+  let best={score:0,kind:null,d:null}, types=0;
+  for(const k in groups){ const arr=groups[k]; if(!arr.length) continue; types++; const d=arr[0]._m, g=OUT_GOOD[k], s=distScore(d,g.g,g.z); if(s>best.score) best={score:s,kind:k,d}; }
+  f.out={score:clamp(best.score+(types>1?(types-1)*5:0),0,100), kind:best.kind, d:best.d};
+
+  // region estimates
+  const rg=cache.region;
+  f.price ={score:affordScore(rg.c), tier:costTier(rg.c), word:costWord(rg.c), basis:rg.basis};
+  f.safety={score:rg.s, word:safetyWord(rg.s), idx:rg.s, basis:rg.basis};
+  return {factors:f, reachMin:M.reachMin, unit:M.unit};
+}
+function overall(f){ let sw=0,acc=0; FACTORS.forEach(x=>{ const w=weights[x.key]; if(w>0){ acc+=f[x.key].score*w; sw+=w; } }); return sw?Math.round(acc/sw):0; }
+function valueText(f,d,m){
+  const u=m.unit, W=MODES[mode];
+  if(f.key==="gym")   return d.min==null?`none ≤${W.worst} min`:`${Math.round(d.min)} min ${u}`;
+  if(f.key==="groc")  return d.min==null?`none ≤${W.worst} min`:`${Math.round(d.min)} min ${u}`;
+  if(f.key==="food")  return `${d.n} spots ≤${m.reachMin} min`;
+  if(f.key==="night") return `${d.n} bars ≤${m.reachMin} min`;
+  if(f.key==="work")  return `${d.n} cafés ≤${m.reachMin} min`;
+  if(f.key==="quiet") return d.min==null?"no bars near":`nearest bar ${Math.round(d.min)} min walk`;
+  if(f.key==="out")   return d.kind==null?"no nature ≤12 km":`${KIND_LABEL[d.kind]} ${fmtKm(d.d)}`;
+  if(f.key==="price") return `${d.tier} · ${d.word}`;
+  if(f.key==="safety")return `${d.word} · ${d.idx}`;
+}
+function verdictCopy(total,f,geo){
+  const place=geo.place||"this spot";
+  const ranked=FACTORS.filter(x=>weights[x.key]>0).map(x=>({...x,s:f[x.key].score})).sort((a,b)=>a.s-b.s);
+  const worst=ranked[0], best=ranked[ranked.length-1];
+  const by=MODES[mode].label.toLowerCase();
+  if(total>=75) return `<b>${place} holds up by ${by}.</b> ${best?best.label.toLowerCase()+" is a strong point":"everything's close"} — book it with confidence.`;
+  if(total>=60) return `<b>${place} is workable by ${by}.</b> Good on ${best?best.label.toLowerCase():"the basics"}, but ${worst&&worst.s<55?"weak on "+worst.label.toLowerCase():"check the details"} first.`;
+  return `<b>Think twice on ${place} by ${by}.</b> ${worst?worst.label+" is the weak link":"the block is stranded"} — a different transport mode or area might change the verdict.`;
+}
+
+// ---------- render ----------
+let map, layer, reachCircle;
+function recompute(){ const model=buildModel(); renderTicket(cache.geo, model); updateReach(cache.geo); }
+function renderTicket(geo, model){
+  const total=overall(model.factors), m={unit:model.unit,reachMin:model.reachMin};
+  const cls=total>=75?"pass-ok":total>=60?"pass-mid":"pass-bad";
+  const stamp=total>=75?"Book it":total>=60?"Worth a look":"Think twice";
+  const rows=FACTORS.map(f=>{
+    const d=model.factors[f.key], skip=weights[f.key]===0, good=d.score>=65;
+    return `<div class="frow ${skip?'skipped':''}"><div class="ftop"><span class="k"><span class="ic">${f.ico}</span>${f.label}${f.est?' <span class="esttag">est</span>':''}</span><span class="v">${valueText(f,d,m)}</span></div><div class="bar ${good?'good':'weak'}"><i style="width:${d.score}%"></i></div></div>`;
+  }).join("");
+  $("#status").style.display="none";
+  const res=$("#result"); res.style.display="block";
+  res.innerHTML=`<div class="ticket ${cls}">
+    <div class="ticket-head"><span class="th-brand"><svg viewBox="0 0 32 32"><rect x="3" y="3" width="26" height="26" rx="5"/><path d="M10 16.5l4 4 8-9" stroke="#FFFDF8" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Nomads Land Boarding Pass</span><span class="th-label">Location report · live</span></div>
+    <div class="ticket-main">
+      <div class="ticket-info">
+        <div class="route"><span class="lbl">Location</span><span class="city">${geo.place||"This spot"}</span><span class="where">${geo.city&&geo.city!==geo.place?geo.city+" · ":""}${geo.country||(geo.full||"").split(",").slice(-1)[0].trim()}</span></div>
+        <div class="ticket-sub"><span class="modepill">${MODES[mode].ico} by ${MODES[mode].label}</span> scored on ${FACTORS.filter(f=>weights[f.key]>0).length} priorities</div>
+        <div class="factors">${rows}</div>
+      </div>
+      <div class="ticket-stub"><div class="stub-score"><span class="lbl">Stay Score</span><span class="n">${total}</span></div><div class="stub-stamp">${stamp}</div></div>
+    </div>
+    <div class="verdict">${verdictCopy(total,model.factors,geo)}</div>
+  </div>`;
+}
+function ensureMap(){ if(!map){ map=L.map("map",{scrollWheelZoom:false}); L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"}).addTo(map);} }
+function drawMarkers(geo){
+  ensureMap();
+  if(layer) layer.remove(); layer=L.layerGroup().addTo(map);
+  const colors={gym:"#A8500F",food:"#2E6FB0",night:"#8E44AD",groc:"#16887A",work:"#C99700"};
+  L.circleMarker([geo.lat,geo.lon],{radius:9,color:"#fff",weight:3,fillColor:"#2E5240",fillOpacity:1}).addTo(layer).bindPopup("<b>Your spot</b><br>"+(geo.place||""));
+  cache.els.slice().sort((a,b)=>a._m-b._m).slice(0,220).forEach(x=>{
+    L.circleMarker([x.lat,x.lon],{radius:5,color:"#fff",weight:1.5,fillColor:colors[x.cat],fillOpacity:.92}).addTo(layer).bindPopup(`<b>${x.name}</b><br>${x.cat}`);
+  });
+  cache.out.slice().sort((a,b)=>a._m-b._m).slice(0,60).forEach(x=>{
+    L.circleMarker([x.lat,x.lon],{radius:5,color:"#fff",weight:1.5,fillColor:"#1F7A3F",fillOpacity:.92}).addTo(layer).bindPopup(`<b>${x.name}</b><br>${KIND_LABEL[x.kind]} · ${fmtKm(x._m)}`);
+  });
+  map.setView([geo.lat,geo.lon],14);
+  setTimeout(()=>map.invalidateSize(),60);
+}
+function updateReach(geo){
+  ensureMap();
+  const reachDist=Math.min(MODES[mode].mpm*MODES[mode].reachMin, AMEN_R);
+  if(reachCircle) reachCircle.remove();
+  reachCircle=L.circle([geo.lat,geo.lon],{radius:reachDist,color:"#2E5240",weight:1.5,dashArray:"5 5",fillColor:"#2E5240",fillOpacity:.05}).addTo(map);
+}
+
+// ---------- flow ----------
+function setStatus(html,err){ const s=$("#status"); s.style.display="block"; s.className="status"+(err?" err":""); s.innerHTML=html; $("#result").style.display="none"; $("#mapwrap").style.display="none"; }
+let busy=false;
+async function run(){
+  if(busy) return;
+  const q=$("#addr").value.trim();
+  if(!q && !selected){ setStatus(`<div class="big">Enter a location first</div><div>Type a specific place and pick it from the list — e.g. "7000 Wisconsin Ave, Bethesda MD".</div>`,true); return; }
+  busy=true; $("#go").disabled=true;
+  setStatus(`<div class="spinner"></div><div class="big">Scoring the location…</div><div>${selected?"Pulling live amenities & outdoors from OpenStreetMap.":"Finding the place, then pulling live data."}</div>`);
+  try{
+    const geo = selected || await geocode(q);
+    const raw = await overpass(geo.lat,geo.lon);
+    const els=[], out=[];
+    raw.forEach(e=>{
+      const c=classify(e.tags||{}); if(!c) return;
+      const lat=e.lat??(e.center&&e.center.lat), lon=e.lon??(e.center&&e.center.lon);
+      if(lat==null||lon==null) return;
+      const _m=haversine(geo,{lat,lon}), name=(e.tags&&e.tags.name)||(c.cat||c.kind);
+      if(c.grp==="a") els.push({lat,lon,cat:c.cat,name,_m});
+      else out.push({lat,lon,kind:c.kind,name,_m});
+    });
+    cache={geo, els, out, region:regionFor(geo)};
+    $("#mapwrap").style.display="block";
+    drawMarkers(geo);
+    recompute();
+  }catch(e){
+    setStatus(`<div class="big">Couldn't score that</div><div>${(e&&e.message)||e}</div><div style="margin-top:10px;font-size:13px">Tip: OSM's free servers throttle sometimes — wait a few seconds and retry.</div>`,true);
+  }finally{ busy=false; $("#go").disabled=false; }
+}
+</script>
+</body>
+</html>
